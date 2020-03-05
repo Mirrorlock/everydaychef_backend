@@ -1,53 +1,86 @@
-Create Database EverydayChef;
-use EverydayChef;
+DROP DATABASE IF EXISTS everydaychef;
+CREATE DATABASE everydaychef charset 'utf8';
+USE everydaychef;
 
-Create Table Users(
-	Id Int primary key auto_increment not null,
-    Name varchar(109) not null,
-    Password varchar(255)
+CREATE TABLE families(
+	Id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    name VARCHAR(100) NOT NULL UNIQUE
 );
 
-Create Table Families(
-	Id Int Primary Key auto_increment not null,
-    Name varchar(255) not null
+CREATE TABLE users(
+	Id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL,
+    password VARCHAR(255),
+    family_id INT NOT NULL,
+    account_type CHAR DEFAULT 'l', ## local, can also be 'g' for google or 'f' for facebook account
+    FOREIGN KEY(family_id) REFERENCES families(Id) ON DELETE CASCADE
 );
 
-Create Table UsersFamilies(
-	UserId Int not null,
-    FamilyId Int not null,
-    Foreign key(UserId) references Users(Id) on delete cascade,
-    Foreign key(FamilyId) references Families(Id) on delete cascade
+CREATE TABLE user_invitations(
+	Id INT AUTO_INCREMENT NOT NULL,
+    user_id INT NOT NULL,
+    family_id INT NOT NULL,
+    PRIMARY KEY(Id, user_id, family_id),
+    FOREIGN KEY(user_id) REFERENCES users(id),
+    FOREIGN KEY(family_id) REFERENCES families(id)
 );
 
-Create Table Recipes(
-	Id Int not null auto_increment primary key,
-    Name varchar(200) not null,
-    CreatorId int,
-    foreign key(CreatorId) references Users(Id) on delete set null,
-    Description text,
-    PictureUrl varchar(255)
+CREATE TABLE recipes(
+	Id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    creator_id INT,
+    description TEXT,
+    picture_url VARCHAR(255),
+    number_of_likes INT NOT NULL DEFAULT 0,
+    FOREIGN KEY(creator_id) REFERENCES users(Id) ON DELETE SET NULL
 );
 
-Create Table Ingredients(
-	Id int not null auto_increment primary key,
-    Name varchar(100),
-    PictureUrl varchar(255)
+CREATE TABLE liked_recipes(
+	Id INT AUTO_INCREMENT NOT NULL,
+	user_id INT NOT NULL,
+    recipe_id INT NOT NULL,
+    PRIMARY KEY(Id, user_id, recipe_id),
+	FOREIGN KEY(user_id) REFERENCES users(Id) ON DELETE CASCADE,
+	FOREIGN KEY(recipe_id) REFERENCES recipes(Id) ON DELETE CASCADE
 );
 
-Create Table RecipeIngredients(
-	RecipeId Int not null,
-    IngredientId Int not null,
-    QuantityValue int not null,
-    QuantityUnit varchar(100) not null,
-    foreign key(RecipeId) references Recipes(Id) on delete cascade,
-    foreign key(IngredientId) references Ingredients(Id) on delete cascade
+CREATE TABLE ingredients(
+	Id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    name VARCHAR(100) UNIQUE,
+    picture_url VARCHAR(255)
 );
 
-Create Table FamilyIngredients(
-	FamilyId int not null,
-    IngredientId int not null,
-    QuantityValue int not null,
-    QuantityUnit varchar(100) not null,
-    foreign key(FamilyId) references Families(Id) on delete cascade,
-    foreign key(IngredientId) references Ingredients(Id) on delete cascade
+CREATE TABLE recipe_ingredients(
+	Id INT AUTO_INCREMENT NOT NULL,
+	recipe_id INT NOT NULL,
+    ingredient_id INT NOT NULL,
+    quantity_value INT NOT NULL,
+    quantity_unit VARCHAR(100) NOT NULL,
+    PRIMARY KEY(Id, recipe_id, ingredient_id),
+    FOREIGN KEY(recipe_id) REFERENCES recipes(Id) ON DELETE CASCADE,
+    FOREIGN KEY(ingredient_id) REFERENCES ingredients(Id) ON DELETE CASCADE
 );
+
+CREATE TABLE family_ingredients(
+	Id INT AUTO_INCREMENT NOT NULL,
+	family_id INT NOT NULL,
+    ingredient_id INT NOT NULL,
+    quantity_value INT NOT NULL,
+    quantity_unit VARCHAR(100) NOT NULL,
+    PRIMARY KEY(Id, family_id, ingredient_id),
+    FOREIGN KEY(family_id) REFERENCES families(Id) ON DELETE CASCADE,
+    FOREIGN KEY(ingredient_id) REFERENCES ingredients(Id) ON DELETE CASCADE
+);
+
+DELIMITER //
+CREATE TRIGGER liked_recipes_trigger BEFORE INSERT ON liked_recipes
+	FOR EACH ROW 
+	BEGIN 
+		UPDATE recipes 
+		SET number_of_likes = number_of_likes + 1
+		WHERE Id = NEW.recipe_id;
+	END;
+//
+DELIMITER ;
+

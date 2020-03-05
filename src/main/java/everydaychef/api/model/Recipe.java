@@ -1,14 +1,27 @@
 package everydaychef.api.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import javax.persistence.*;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name="recipes")
 public class Recipe {
+
+    public Recipe(){}
+
+    public Recipe(String name, String description, String picture_url, User creator) {
+        this.name = name;
+        this.description = description;
+        this.picture_url = picture_url;
+        this.ingredients = new HashSet<Ingredient>();
+        this.likes = new HashSet<User>();
+        this.creator = creator;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int Id;
@@ -18,17 +31,23 @@ public class Recipe {
     private String picture_url;
     private int number_of_likes;
 
+
+
     @ManyToOne
-    @JsonBackReference
+    @JoinColumn(name = "creator_id")
+    @JsonIgnoreProperties({"family", "invitations"})
+    @JsonManagedReference
     private User creator;
 
     @ManyToMany
-    @JsonBackReference
+    @JoinTable(name = "liked_recipes",
+            joinColumns = @JoinColumn(name="recipe_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
+    @JsonManagedReference
     private Set<User> likes;
 
     @ManyToMany
     @JoinTable(name="recipe_ingredients", inverseJoinColumns = @JoinColumn(name="ingredient_id"))
-    @JsonBackReference
+    @JsonManagedReference
     private Set<Ingredient> ingredients;
 
     public int getId() {
@@ -77,5 +96,52 @@ public class Recipe {
 
     public void setCreator(User creator) {
         this.creator = creator;
+    }
+
+    public Set<User> getLikes() {
+        return likes;
+    }
+
+    public void setLikes(Set<User> likes) {
+        this.likes = likes;
+    }
+
+    public Set<Ingredient> getIngredients() {
+        return ingredients;
+    }
+
+    public void setIngredients(Set<Ingredient> ingredients) {
+        this.ingredients = ingredients;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Recipe)) return false;
+        Recipe recipe = (Recipe) o;
+        return getId() == recipe.getId() &&
+                getNumber_of_likes() == recipe.getNumber_of_likes() &&
+                getName().equals(recipe.getName()) &&
+                Objects.equals(getDescription(), recipe.getDescription()) &&
+                Objects.equals(getPicture_url(), recipe.getPicture_url());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getName(), getDescription(), getPicture_url(), getNumber_of_likes());
+    }
+
+    @Override
+    public String toString() {
+        return "Recipe{" +
+                "Id=" + Id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", picture_url='" + picture_url + '\'' +
+                ", number_of_likes=" + number_of_likes +
+                ", creator=" + creator +
+                ", likes=" + likes +
+                ", ingredients=" + ingredients +
+                '}';
     }
 }

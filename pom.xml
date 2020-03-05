@@ -15,7 +15,7 @@
     <description>The perfect assistant in the kitchen</description>
 
     <properties>
-        <java.version>8</java.version>
+        <java.version>9</java.version>
     </properties>
 
     <dependencies>
@@ -101,6 +101,14 @@
                         <version>${kotlin.version}</version>
                     </dependency>
                 </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>9</source>
+                    <target>9</target>
+                </configuration>
             </plugin>
         </plugins>
     </build>

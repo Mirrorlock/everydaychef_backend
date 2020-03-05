@@ -10,7 +10,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="everydaychef" target="8" />
+      <module name="everydaychef" target="9" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
