@@ -1,6 +1,5 @@
 package everydaychef.api.controller;
 
-import everydaychef.api.config.JwtToken;
 import everydaychef.api.exceptions.ValidationException;
 import everydaychef.api.model.Family;
 import everydaychef.api.model.Recipe;
@@ -23,7 +22,6 @@ public class UserController {
     final private UserRepository userRepository;
     final private FamilyRepository familyRepository;
     private Logger logger = LoggerFactory.getLogger(UserController.class);
-
 
     public UserController(UserRepository userRepository,
                           FamilyRepository familyRepository) {
@@ -169,7 +167,7 @@ public class UserController {
 //    }
 
         @PutMapping("/user/{userId}/family/{familyId}/invite")
-    public ResponseEntity<Boolean> inviteUserToFamily(@PathVariable String userId, @PathVariable String familyId,
+    public ResponseEntity<String> inviteUserToFamily(@PathVariable String userId, @PathVariable String familyId,
                                     @RequestBody Map<String, String> body){
         Optional<Family> optionalFamily =  familyRepository.findById(Integer.parseInt(familyId));
         if(optionalFamily.isPresent()){
@@ -180,10 +178,10 @@ public class UserController {
                 family.getInvitedUsers().add(user);
             });
             familyRepository.save(family);
-            return new ResponseEntity<>(true, HttpStatus.OK);
+            return new ResponseEntity<>("true", HttpStatus.OK);
         }else{
             System.out.println("We are here!");
-            return new ResponseEntity<>(false, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("false", HttpStatus.NOT_FOUND);
         }
     }
 

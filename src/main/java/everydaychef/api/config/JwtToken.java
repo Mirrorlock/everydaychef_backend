@@ -45,6 +45,9 @@ public class JwtToken implements Serializable {
     @Value("${google.validate.token.url}")
     private String googleTokenValidationURL;
 
+    @Value("${facebook.validate.token.url}")
+    private String facebookTokenValidationURL;
+
     @Value("${jwt.secret}")
     private String secret;
 
@@ -81,55 +84,25 @@ public class JwtToken implements Serializable {
                 .signWith(SignatureAlgorithm.HS512, secret).compact();
     }
 
-    public Boolean validateToken(String jwtToken, String authenticationMethod){
-
-        return false;
-    }
-    public Boolean validateFacebookToken(String token) {
-        return false;
-    }
-
-    public Boolean validateManualToken(String token, UserDetails userDetails){
-        String username = getUsernameFromToken(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    public JSONObject validateFacebookToken(String idTokenString) {
+        return webClient.get()
+                .uri(facebookTokenValidationURL + idTokenString)
+                .exchange()
+                .block()
+                .bodyToMono(JSONObject.class)
+                .block();
     }
 
-    public JSONObject validateGoogleTokenResponse(String idTokenString) {
+    public Boolean validateManualToken(String token){
+        return  !isTokenExpired(token);
+    }
+
+    public JSONObject validateGoogleToken(String idTokenString) {
         return webClient.get()
                 .uri(googleTokenValidationURL + idTokenString)
                 .exchange()
                 .block()
                 .bodyToMono(JSONObject.class)
                 .block();
-//        logger.info("Returned response from validate google token request is: " + response.toJSONString());
-//        String audClaim = response.getAsString("aud");
-//        System.out.println("Returned aud is: " + audClaim);
-//        if (audClaim.equals(googleClientId)) return true;
-//        else{
-//            return false;
-//        }
-        //
-//        if (idToken != null) {
-//            Payload payload = idToken.getPayload();
-//
-//            // Print user identifier
-//            String userId = payload.getSubject();
-//            System.out.println("User ID: " + userId);
-//
-//            // Get profile information from payload
-//            String email = payload.getEmail();
-//            boolean emailVerified = Boolean.valueOf(payload.getEmailVerified());
-//            String name = (String) payload.get("name");
-//            String pictureUrl = (String) payload.get("picture");
-//            String locale = (String) payload.get("locale");
-//            String familyName = (String) payload.get("family_name");
-//            String givenName = (String) payload.get("given_name");
-//
-//            // Use or store profile information
-//            // ...
-//
-//        } else {
-//            System.out.println("Invalid ID token.");
-//        }
     }
 }

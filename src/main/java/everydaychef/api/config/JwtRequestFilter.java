@@ -1,16 +1,15 @@
 package everydaychef.api.config;
 
-import com.google.api.client.auth.oauth2.BearerToken;
+import everydaychef.api.repository.UserRepository;
+import everydaychef.api.service.JwtUserDetailsService;
 import io.jsonwebtoken.ExpiredJwtException;
 import net.minidev.json.JSONObject;
-import org.hibernate.tool.schema.internal.exec.ScriptTargetOutputToFile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.parameters.P;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -23,76 +22,83 @@ import java.io.IOException;
 
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
-//    @Autowired
-//    private JwtUserDetailsService jwtUserDetailsService;
+    @Autowired
+    private JwtUserDetailsService jwtUserDetailsService;
+
+    private final UserRepository userRepository;
 
     private final JwtToken jwtTokenUtil;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     @Value("${google.client.id}")
     private String googleClientId;
 
-    public JwtRequestFilter(JwtToken jwtTokenUtil) {
+    public JwtRequestFilter(UserRepository userRepository, JwtToken jwtTokenUtil) {
+        this.userRepository = userRepository;
         this.jwtTokenUtil = jwtTokenUtil;
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        Authentication authentication = getAuthentication(request);
-        if (authentication != null) {
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        String name = getNameIfAuthenticated(request);
+        if (name != null) {
+            UserDetails userDetails = this.jwtUserDetailsService.loadUserByUsername(name);
+            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+                                userDetails, null, userDetails.getAuthorities());
+            usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
         }
         chain.doFilter(request, response);
     }
 
-    private Authentication getAuthentication(HttpServletRequest request) {
+    private String getNameIfAuthenticated(HttpServletRequest request) {
         final String requestTokenHeader = request.getHeader("Authorization");
         final String authenticationMethod = request.getHeader("AuthenticationMethod");
-        String username = null;
+        System.out.println("Found token: " + requestTokenHeader);
+        System.out.println("Found method: " + authenticationMethod);
         String jwtToken;
         if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
             jwtToken = requestTokenHeader.substring(7);
             if (authenticationMethod != null && authenticationMethod.equals("Google")) {
-                return getAuthenticationFromGoogle(jwtToken);
+                return getNameFromGoogle(jwtToken);
             } else if (authenticationMethod != null && authenticationMethod.equals("Facebook")) {
-//                getAuthenticationFromFacebook(jwtToken);
-//                jwtTokenUtil.validateFacebookToken(jwtToken);
+                return getNameFromFacebook(jwtToken);
             } else {
-//                getManualAuthentication(jwtToken);
-//                jwtTokenUtil.validateManualToken(jwtToken);
+                try {
+                    if(jwtTokenUtil.validateManualToken(jwtToken))
+                        return jwtTokenUtil.getUsernameFromToken(jwtToken);
+                } catch (IllegalArgumentException e) {
+                    logger.error("Unable to get JWT Token");
+                } catch (ExpiredJwtException e) {
+                    logger.error("JWT Token has expired");
+                }
             }
-//                try {
-//                    username = jwtTokenUtil.getUsernameFromToken(jwtToken);
-//                } catch (IllegalArgumentException e) {
-//                    logger.error("Unable to get JWT Token");
-//                } catch (ExpiredJwtException e) {
-//                    logger.error("JWT Token has expired");
-//                }
-//                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-//                    UserDetails userDetails = this.jwtUserDetailsService.loadUserByUsername(username);
-//                    System.out.println(userDetails.toString());
-//                    if (jwtTokenUtil.validateManualToken(jwtToken, userDetails)) {
-//                        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-//                                userDetails, null, userDetails.getAuthorities());
-//                        usernamePasswordAuthenticationToken
-//                                .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-//                        SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-//                    }
-//                }
         } else {
             logger.warn("JWT Token does not begin with Bearer String");
         }
         return null;
     }
 
-    private Authentication getAuthenticationFromGoogle(String jwtToken) {
-        JSONObject googleTokenResponse = jwtTokenUtil.validateGoogleTokenResponse(jwtToken);
+    private String getNameFromGoogle(String jwtToken) {
+        JSONObject googleTokenResponse = jwtTokenUtil.validateGoogleToken(jwtToken);
         String audClaim = googleTokenResponse.getAsString("aud");
-        if (audClaim.equals(googleClientId)) {
-            return null;
-        }   else{
+        String name = googleTokenResponse.getAsString("name");
+        if (audClaim != null && audClaim.equals(googleClientId)) {
+            return name;
+        }else{
             return null;
         }
-
     }
+
+    private String getNameFromFacebook(String jwtToken) {
+        JSONObject facebookTokenResponse = jwtTokenUtil.validateFacebookToken(jwtToken);
+        System.out.println(facebookTokenResponse);
+        return facebookTokenResponse.getAsString("name");
+    }
+
+
+
 }

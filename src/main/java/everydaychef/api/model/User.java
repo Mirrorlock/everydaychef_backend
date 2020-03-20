@@ -49,7 +49,7 @@ public class User {
     @JoinTable(name="user_invitations",
             joinColumns = {@JoinColumn(name="user_id")},
             inverseJoinColumns={@JoinColumn(name="family_id")})
-    @ManyToMany()
+    @ManyToMany(fetch = FetchType.EAGER)
     @JsonBackReference
     private Set<Family> familyInviters;
 
