@@ -1,13 +1,17 @@
 package everydaychef.api.controller;
 
-import everydaychef.api.exceptions.ValidationException;
 import everydaychef.api.model.Family;
 import everydaychef.api.model.Recipe;
 import everydaychef.api.model.User;
+import everydaychef.api.model.helpermodels.NotificationRequest;
+import everydaychef.api.repository.DeviceRepository;
 import everydaychef.api.repository.FamilyRepository;
 import everydaychef.api.repository.UserRepository;
+import everydaychef.api.service.NotificationsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,12 +25,24 @@ public class UserController {
 
     final private UserRepository userRepository;
     final private FamilyRepository familyRepository;
-    private Logger logger = LoggerFactory.getLogger(UserController.class);
+    final private DeviceRepository deviceRepository;
+
+//    @Bean
+//    public NotificationsService notificationsServiceBean() {
+//        return new NotificationsService();
+//    }
+
+//    @Autowired
+    final private NotificationsService notificationsService;
+
+//    private Logger logger = LoggerFactory.getLogger(UserController.class);
 
     public UserController(UserRepository userRepository,
-                          FamilyRepository familyRepository) {
+                          FamilyRepository familyRepository, DeviceRepository deviceRepository, NotificationsService notificationsService) {
         this.userRepository = userRepository;
         this.familyRepository = familyRepository;
+        this.deviceRepository = deviceRepository;
+        this.notificationsService = notificationsService;
     }
 
     private Optional<User> getUserById(String Id){
@@ -54,7 +70,6 @@ public class UserController {
     public ResponseEntity<User> getUserByUsername(@PathVariable String username) {
         Optional<User> foundUser = userRepository
                 .findByName(username);
-        System.out.println("User searched with name: "+ username + " and found: " + foundUser.orElse(null) );
         return foundUser
                 .map(user -> new ResponseEntity<>(user, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(null, HttpStatus.NOT_FOUND));
@@ -83,12 +98,6 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    
-
-
-
-
-
 
     @PostMapping("/user")
     public ResponseEntity<?> create(@RequestBody Map<String, String> body) /*throws ValidationException */{
@@ -96,36 +105,35 @@ public class UserController {
         if (userRepository.existsByName(username)){
             return ResponseEntity.badRequest().body("Username already exists!");
         }
+        System.out.println("Body on register is: " + body);
+        String firebaseToken = body.get("firebase_token");
+        System.out.println("The token is: " + firebaseToken);
         String password = body.get("password");
         String email = body.get("email");
         char authenticationMethod = body.get("authentication_method") != null
                         ? body.get("authentication_method").charAt(0) : 'l';
-        if(password != null){
+        if(password != null && !password.isEmpty()){
             password = new BCryptPasswordEncoder().encode(password);
         }
         User newUser = new User(username, email, password, null, authenticationMethod);
         newUser.setDefaultFamily(familyRepository);
         newUser = userRepository.save(newUser);
+        newUser.addDevice(firebaseToken, deviceRepository);
+        newUser = userRepository.save(newUser);
         return ResponseEntity.ok().body(newUser);
     }
 
-
-
-
-
-
-
     @PutMapping("/user/{userId}/family/{familyName}")
-    public ResponseEntity</*Family*/?> changeFamily(@PathVariable String userId, @PathVariable String familyName){
+    public ResponseEntity<?> changeFamily(@PathVariable String userId, @PathVariable String familyName){
         if(familyRepository.existsByName(familyName)){
             return ResponseEntity.badRequest().body("Family name already taken!");
         }
         Family newFamily = new Family(familyName);
         return getUserById(userId).map(user -> {
-            user.setFamily(newFamily);
-            newFamily.getUsers().add(user);
-            familyRepository.save(newFamily);
-            return new ResponseEntity<>(userRepository.save(user), HttpStatus.OK);
+            Family fam = familyRepository.save(newFamily);
+            user.setFamily(fam);
+            fam.getUsers().add(userRepository.save(user));
+            return new ResponseEntity<Family>(fam, HttpStatus.OK);
         }).orElse(new ResponseEntity<>(null, HttpStatus.NOT_FOUND));
     }
 
@@ -166,7 +174,7 @@ public class UserController {
 //        }).orElse(new ResponseEntity<>(null, HttpStatus.NOT_FOUND));
 //    }
 
-        @PutMapping("/user/{userId}/family/{familyId}/invite")
+    @PutMapping("/user/{userId}/family/{familyId}/invite")
     public ResponseEntity<String> inviteUserToFamily(@PathVariable String userId, @PathVariable String familyId,
                                     @RequestBody Map<String, String> body){
         Optional<Family> optionalFamily =  familyRepository.findById(Integer.parseInt(familyId));
@@ -176,19 +184,22 @@ public class UserController {
                 user.addInvitation(family);
                 userRepository.save(user);
                 family.getInvitedUsers().add(user);
+                sendInvitationNotification(user, family);
             });
             familyRepository.save(family);
             return new ResponseEntity<>("true", HttpStatus.OK);
         }else{
-            System.out.println("We are here!");
             return new ResponseEntity<>("false", HttpStatus.NOT_FOUND);
         }
     }
 
-
-
-
-
+    private void sendInvitationNotification(User user, Family family) {
+        NotificationRequest request = new NotificationRequest(
+                 new ArrayList<>(user.getDevices()),
+                "Invitation from " + family.getName(),
+                "You have been invited to join this family. Click here to answer their question!");
+        notificationsService.sendNotificationToUser(request);
+    }
 
     @DeleteMapping("/user/{userId}/family")
     public ResponseEntity<Family> userLeaveFamily(@PathVariable String userId){

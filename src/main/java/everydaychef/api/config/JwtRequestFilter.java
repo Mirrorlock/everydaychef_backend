@@ -57,8 +57,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     private String getNameIfAuthenticated(HttpServletRequest request) {
         final String requestTokenHeader = request.getHeader("Authorization");
         final String authenticationMethod = request.getHeader("AuthenticationMethod");
-        System.out.println("Found token: " + requestTokenHeader);
-        System.out.println("Found method: " + authenticationMethod);
+        System.out.println("Received request(" + authenticationMethod + ")");
         String jwtToken;
         if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
             jwtToken = requestTokenHeader.substring(7);

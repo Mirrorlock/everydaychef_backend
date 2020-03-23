@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "everydaychef-1580137602430",
+  "private_key_id": "4a1d43f06d4b00576269482a059d7d08ba4672ed",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCeLKFYKA7lSlfp\nhjDKwZFXQiBZuzF7x6cgP8qzkyBa2XNemi4zkeSH+axUzE6wOrBDyTGoiW9cRfxy\nhnyGXWJ0RfkwlwQ0qJu3QQ+ACeCpGXMME/K6n1c8AAXwFQRDooEWqrHdwOwk+LHK\nxf/0asVLaVhm3Wf09ZVBWMP5FDCAesVR1IjLMMTan+ENiiNIW6jzlFud26z++hVk\nj7S77F4X2lE0Y3OIpEfqWFQ3e9xenjPNt1L1K9oPkXKgMrn5uXux2EzK6Z10VcML\nCp8SiengYrFhmakLh3iitsgkklcWXnXPVOU6RohSwOqvGJr8IMZGxtTDrTH/FdDg\nFuCT5e2hAgMBAAECggEAOhESTiWuijhHm8Aai2SSMaFh9O8GlHVQAkPI6zGY0CFB\n/DnHukDVz6E1xY+XV5TD/q6On1uM2SgMLBL5Be6kZSEHAPJ/pcE8IQMuaIe3xPxF\nwupT0nUKdklf5KoifZ3bm/GgCFN5nXz68ADOHPFRaoTK4kBnmILLf0jR8M+bmp5j\nWTuAXIyt8r5tOM5fa4ZxeOxvh7kXw645k9mUN4/njtz+HFV/LJbfHguDZLGjMXKu\nVJWUqJwMA6XL73lEueG4VanBULrY4k2DPb2Eet/etOanmlJO9FAFq6+DvURCWB0s\nn/HxRnUapvy4X6eNWgneRmk3Y0alp+ziIIx4hKC0nQKBgQDXZdD0PWJHIVJ1ej2e\n0JpZ7g4pdfAOgyAXt8ZeUBXyz2UExEBx8pjAFCD3nfmH7m8MTRxudNGvnB8vV13S\ngGC5fYqHkcOX0iy1ux1XtsRDeH3iAGsmslGkWdFBlA56bVXeDaONXj4orrnnBjiL\n/8o44igdUEDCmsbJNRHoT/+hSwKBgQC7/XSTf/6qgVcKI0TwYooVn23ztzsTxBGb\nKhDv1af401fINzFjAntjAsha8rq8gxq3W/XH/lFT2z8bkj0E+oHRaomaKqTOymjA\nPYV3tGzRHojGY33aPjyg8olHTxue++K8lQdLfbCewl7DQmL6std9nDYfXxmOkrTL\nk5UomqDFQwKBgA8MsxvNiidUIbHJl7KX+qDb7CtjbSFmcgCWO4rtZ4suiG1b1PDh\nNWD+RwtmA0BHHYUrghgJm3j8nIUvQoPpqlhreBleyt65tZwA9dziDTZ1nb4Dr3jl\nrqSgDenaEWTmbMB2DX5cHlWzV5PXsG2/sn5k9s6Ng+jU7ZyzU4v6wu6fAoGADKE7\nmslHn8buxRSXhhrosgkzBuOxiWNr12PdHW/aSCJSzHXA0KkTBxThxxJ1r0KToewA\nuD4C0sJxG/YYOWRnIl2o/v2McwQwQ3IerGsnwGjvwXxfsTDrO9jvliXfci/0DL1q\nbwzzt8bRPQcRxUwMpDjBfhwSiHycvuycYcz5ricCgYEAuLhSIhUy4VIXQHWpf6O/\nFSwTN/w37EW53xHMuUqlEXfkSB1XgI33AhfCkS/u1yzYj6eUW0qfirZm3bP1pYzB\n4gq5UKtj9FBmRVwNS8McCvtj47dtjiusWrDhdtiP+MoG867N0X4Im150s6kqlOi9\nIS+LxoacIzmj1UuXisA9D3s=\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-pa6qq@everydaychef-1580137602430.iam.gserviceaccount.com",
+  "client_id": "105676053098560400570",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-pa6qq%40everydaychef-1580137602430.iam.gserviceaccount.com"
+}

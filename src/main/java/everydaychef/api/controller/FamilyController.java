@@ -59,10 +59,8 @@ public class FamilyController {
         if(family != null){
             Set<User> nonMembers = userRepository.findAll()
                     .stream()
-                    .peek(user -> System.out.println(user.getName() + " " + user.getFamily() + " like " + family + " ? " + user.getFamily().equals(family)))
                     .filter(user -> !user.getFamily().equals(family))
                     .collect(Collectors.toSet());
-            System.out.println("Result list is: " + nonMembers);
             result = ResponseEntity.ok().body(nonMembers);
         }else{
             result = ResponseEntity.notFound().build();
@@ -102,7 +100,6 @@ public class FamilyController {
                     }
                     recipeSuitabilityPercentages.put(recipe, percentage);
                 });
-                System.out.println("Recipe suitabilty percentages: " + recipeSuitabilityPercentages.toString());
                 recommendedRecipes = recipeSuitabilityPercentages.entrySet()
                         .stream()
                         .sorted(Map.Entry.<Recipe, Float>comparingByValue().reversed())
@@ -120,11 +117,6 @@ public class FamilyController {
                 .map(family -> ResponseEntity.ok().body(family.getShoppingLists()))
                 .orElse(ResponseEntity.notFound().build());
     }
-
-
-
-
-
 
     @PostMapping("family/{familyId}/ingredients/{ingredientId}")
     public ResponseEntity<Family> addIngredients(@PathVariable String familyId, @PathVariable String ingredientId){
@@ -197,7 +189,6 @@ public class FamilyController {
 //        familyRepository.findById(familyId).ifPresent(family -> {
 //            family.getUsers().forEach(user->user.setFamily(new Family(user.getName() + "'s Family")));
 //        });
-//        // TODO(ADD ERROR HANDLING OF THE METHOD...)
 //        familyRepository.deleteById(familyId);
 //        return new ResponseEntity<>(true, HttpStatus.OK);
 //    }

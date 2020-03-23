@@ -74,9 +74,7 @@ public class ShoppingListController {
     public ResponseEntity<ShoppingList> removeIngredient(@PathVariable String shoppingListId, @PathVariable String ingredientId){
         return shoppingListRepository.findById(Integer.parseInt(shoppingListId)).map(shoppingList ->
                 ingredientRepository.findById(Integer.parseInt(ingredientId)).map(ingredient -> {
-                    System.out.println("Ingredients before remove: " + shoppingList.getIngredients());
                     shoppingList.getIngredients().remove(ingredient);
-                    System.out.println("Ingredients after remove: " + shoppingList.getIngredients());
                     shoppingListRepository.save(shoppingList);
                     return ResponseEntity.ok().body(shoppingList);
             }).orElse(ResponseEntity.notFound().build())

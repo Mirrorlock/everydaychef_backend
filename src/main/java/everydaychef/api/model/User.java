@@ -2,6 +2,7 @@ package everydaychef.api.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import everydaychef.api.repository.DeviceRepository;
 import everydaychef.api.repository.FamilyRepository;
 import net.minidev.json.annotate.JsonIgnore;
 
@@ -22,20 +23,11 @@ public class User {
     private String email;
     private String password;
 
-    private char account_type;
-
-    public Set<Family> getFamilyInviters() {
-        return familyInviters;
-    }
-
-    public void setFamilyInviters(Set<Family> familyInviters) {
-        this.familyInviters = familyInviters;
-    }
-
     @ManyToOne
     @JoinColumn(name="family_id")
     @JsonManagedReference
     private Family family;
+
 
     @OneToMany(mappedBy = "creator")
     @JsonBackReference
@@ -53,6 +45,11 @@ public class User {
     @JsonBackReference
     private Set<Family> familyInviters;
 
+    @OneToMany(mappedBy = "user")
+    private Set<Device> devices;
+
+    private char account_type;
+
     public User() {
         likedRecipes = new HashSet<>();
         familyInviters = new HashSet<>();
@@ -64,8 +61,17 @@ public class User {
         this.password = password;
         this.account_type = account_type;
         this.family = family;
+        devices = new HashSet<>();
         likedRecipes = new HashSet<>();
         familyInviters = new HashSet<>();
+    }
+
+    public Set<Family> getFamilyInviters() {
+        return familyInviters;
+    }
+
+    public void setFamilyInviters(Set<Family> familyInviters) {
+        this.familyInviters = familyInviters;
     }
 
     public int getId() {
@@ -146,6 +152,21 @@ public class User {
         this.email = email;
     }
 
+    public Set<Device> getDevices() {
+        return devices;
+    }
+
+    public void setDevices(Set<Device> devices) {
+        this.devices = devices;
+    }
+
+    public void addDevice(String firebaseToken, DeviceRepository deviceRepository){
+        System.out.println("Setting user with id " + getId());
+        Device newDevice = new Device(this, firebaseToken);
+        newDevice = deviceRepository.save(newDevice);
+        devices.add(newDevice);
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -156,6 +177,7 @@ public class User {
                 ", account_type=" + account_type +
                 ", family=" + family +
                 ", familyInviters=" + familyInviters +
+                ", devices=" + devices +
                 '}';
     }
 

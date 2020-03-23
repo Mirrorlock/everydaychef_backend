@@ -73,7 +73,6 @@ public class RecipeController {
             if(originalImageName != null){
                 String newRecipeImageName = recipeName.replace(" ", "_").toLowerCase() +"_image" + originalImageName.substring(originalImageName.indexOf("."));
                 storageService.storeFile(picture, newRecipeImageName);
-
                 Recipe recipe = new Recipe(recipeName, recipeDescription, "local:img/" + newRecipeImageName, user);
                 recipe = recipeRepository.save(recipe);
                 return ResponseEntity.ok().body(recipe);
@@ -135,5 +134,4 @@ public class RecipeController {
         recipe.getLikes().remove(user);
         recipe.setNumber_of_likes(recipe.getNumber_of_likes()-1);
     }
-
 }
