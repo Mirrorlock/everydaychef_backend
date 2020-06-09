@@ -38,8 +38,6 @@ public class FamilyController {
         return familyRepository.findById(familyId);
     }
 
-
-
     @GetMapping("/family")
     public ResponseEntity<List<Family>> index(){
         return new ResponseEntity<>( familyRepository.findAll(), HttpStatus.OK);
@@ -80,7 +78,6 @@ public class FamilyController {
                 .map(family -> ResponseEntity.ok().body(family.getIngredients()))
                 .orElse(ResponseEntity.notFound().build());
     }
-
 
     @GetMapping("family/{id}/recommended_recipes")
     public ResponseEntity<List<Recipe>> getRecommendedRecipes(@PathVariable String id){
@@ -147,11 +144,6 @@ public class FamilyController {
         return new ResponseEntity<>(familyRepository.save(new Family(name)), HttpStatus.OK);
     }
 
-
-
-
-
-
     @PutMapping("/family/{id}")
     public ResponseEntity<Family> update(@PathVariable String id, @RequestBody Map<String, String> body){
 
@@ -159,11 +151,6 @@ public class FamilyController {
         family.setName(body.get("name"));
         return new ResponseEntity<>(familyRepository.save(family), HttpStatus.OK);
     }
-
-
-
-
-
 
     @DeleteMapping("family/{familyId}/ingredients/{ingredientId}")
     public ResponseEntity<List<Ingredient>> removeIngredients(@PathVariable String familyId, @PathVariable String ingredientId){

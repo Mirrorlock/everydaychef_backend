@@ -1,6 +1,5 @@
 package everydaychef.api.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -29,9 +28,9 @@ public class Recipe {
     private String name;
     private String description;
     private String picture_url;
+
+    @Column(nullable = false, columnDefinition = "integer default 0")
     private int number_of_likes;
-
-
 
     @ManyToOne
     @JoinColumn(name = "creator_id")

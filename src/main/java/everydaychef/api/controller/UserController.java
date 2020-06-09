@@ -8,10 +8,7 @@ import everydaychef.api.repository.DeviceRepository;
 import everydaychef.api.repository.FamilyRepository;
 import everydaychef.api.repository.UserRepository;
 import everydaychef.api.service.NotificationsService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,16 +23,8 @@ public class UserController {
     final private UserRepository userRepository;
     final private FamilyRepository familyRepository;
     final private DeviceRepository deviceRepository;
-
-//    @Bean
-//    public NotificationsService notificationsServiceBean() {
-//        return new NotificationsService();
-//    }
-
-//    @Autowired
     final private NotificationsService notificationsService;
 
-//    private Logger logger = LoggerFactory.getLogger(UserController.class);
 
     public UserController(UserRepository userRepository,
                           FamilyRepository familyRepository, DeviceRepository deviceRepository, NotificationsService notificationsService) {
@@ -95,6 +84,17 @@ public class UserController {
     public ResponseEntity<List<Recipe>> getCreatedRecipes(@PathVariable String id){
         return getUserById(id)
                 .map(user -> ResponseEntity.ok().body(user.getRecipes()))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("user/{id}/recipes/liked")
+    public HttpEntity<Set<Recipe>> getFavouriteRecipes(@PathVariable String id){
+        System.out.println("Received request with id: " + id);
+        return getUserById(id)
+                .map(user -> {
+                    System.out.println("Found recipes: " + user.getLikedRecipes());
+                    return ResponseEntity.ok().body(user.getLikedRecipes());
+                })
                 .orElse(ResponseEntity.notFound().build());
     }
 
